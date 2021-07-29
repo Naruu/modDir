@@ -21,6 +21,7 @@ OUTPUT_DIR = "outputs"
 
 random.seed(0)
 
+
 def partition(N, num_partition):
     partitions = [0] * num_partition
     p_sums = [0] * num_partition
@@ -35,7 +36,8 @@ def partition(N, num_partition):
         if p_sums[p_idx] > count_per_partition:
             p_idx += 1
             partitions[p_idx] = row_idx + 1
-    p_range = [(partitions[i], partitions[i+1]) for i in range(num_partition-1)]
+    p_range = [(partitions[i], partitions[i+1])
+               for i in range(num_partition-1)]
     p_range.append((partitions[-1], N-1))
     print(f" p_sums: {p_sums}, partitions: {partitions}, p_range: {p_range}")
     return p_range
@@ -46,7 +48,7 @@ def edit_distance_job(arg):
 
     log_path = f"{log_dir}/{os.getpid()}.log"
     logging.basicConfig(filename=log_path, level=logging.INFO,
-                    format="%(asctime)s %(levelname)s %(processName)s %(message)s")
+                        format="%(asctime)s %(levelname)s %(processName)s %(message)s")
     output_path = f"{output_dir}/{os.getpid()}.csv"
 
     first_idx = idxs[0]
@@ -54,7 +56,8 @@ def edit_distance_job(arg):
 
     for from_idx, from_hash in enumerate(from_hashes):
         if from_idx % 100 == 0:
-            logging.info(f"pid:{os.getpid()}, current: {from_idx}, between: ({idxs[0]}, {idxs[1]}) {datetime.datetime.now().strftime('%m-%d-%H-%M-%S')}")
+            logging.info(
+                f"pid:{os.getpid()}, current: {from_idx}, between: ({idxs[0]}, {idxs[1]}) {datetime.datetime.now().strftime('%m-%d-%H-%M-%S')}")
 
         from_model = dataset.fixed_statistics[from_hash]
         seed_matrix, seed_ops = from_model['module_adjacency'], from_model['module_operations']
@@ -62,17 +65,20 @@ def edit_distance_job(arg):
         global_idx = first_idx + from_idx
         to_hashes = seed_hashes[global_idx:]
         for _, to_hash in enumerate(to_hashes):
-            print(_)
-            print(to_hash)
             to_model = dataset.fixed_statistics[to_hash]
             matrix, ops = to_model['module_adjacency'], to_model['module_operations']
 
-            true_distance = get_edit_distance(seed_matrix, seed_ops, matrix, ops, max_edit_distance)
+            if len(seed_ops) != len(ops):
+                continue
+
+            true_distance = get_edit_distance(
+                seed_matrix, seed_ops, matrix, ops, max_edit_distance)
 
             if true_distance > 0:
                 with open(output_path, 'a') as f:
                     writer = csv.writer(f)
                     writer.writerow([from_hash, to_hash, true_distance])
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -81,7 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data_path', type=str, required=False, default=DEFAULT_DATA_PATH,
                         help=f'path to nasbench101 dataset. default: {DEFAULT_DATA_PATH}')
     parser.add_argument('-n', '--seed_arch_count', type=int, required=False,
-                         help=f'number_of_seed_architectures')
+                        help=f'number_of_seed_architectures')
     parser.add_argument('-ed', '--max_edit_distance', type=int, default=MAX_EDIT_DISTANCE,
                         help=f'max edit distance to look up from dataset. default: {MAX_EDIT_DISTANCE}')
     parser.add_argument('-o', '--output_dir', required=False, default=OUTPUT_DIR,
@@ -93,7 +99,6 @@ if __name__ == '__main__':
     cur_dt = datetime.datetime.now().strftime('%m-%d-%H-%M-%S')
     output_dir = args.output_dir + "/" + cur_dt
     log_dir = "logs/" + cur_dt
-
 
     dataset = api101.NASBench(args.data_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -116,7 +121,8 @@ if __name__ == '__main__':
     # seed_hashes = list(dataset.hash_iterator())
     print(f"number of hashe: {len(seed_hashes)}")
 
-    p_args = [dataset, seed_hashes, output_dir, log_dir, args.max_edit_distance]
+    p_args = [dataset, seed_hashes, output_dir,
+              log_dir, args.max_edit_distance]
     idxs = partition(len(seed_hashes), args.num_processes)
     p_args_list = [p_args + [idxs[i]] for i in range(len(idxs))]
 
