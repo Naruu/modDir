@@ -1,8 +1,15 @@
+import csv
+import glob
 from copy import deepcopy
 
 import networkx as nx
 
 OP_CHOICES = ["conv1x1-bn-relu", "conv3x3-bn-relu", "maxpool3x3"]
+
+
+def partition(lst, num_partition):
+    for i in range(0, len(lst), num_partition):
+        yield lst[i: i + num_partition]
 
 
 def to_nx_graph(matrix, ops):
@@ -52,3 +59,22 @@ def edit_one_node(original_matrix, original_ops):
             ops[idx] = choice
             edited.append((matrix, ops))
     return edited
+
+
+def unique_edgelist(input_dir, output_filename):
+    c = 0
+    hash_pairs = set()
+    for filename in glob.glob(input_dir + "/*.csv"):
+        with open(filename) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                hash_pairs.add(tuple(sorted(row)))
+                c += 1
+    print(f"number of hash pairs. raw: {c}, unique: {len(hash_pairs)}")
+
+    output_dir = "/".join(output_filename.split("/")[:-1])
+    os.makedirs(output_dir, exist_ok=True)
+
+    with open(output_filename, 'w') as f:
+        writer = csv.writer(f)
+        writer.writerows(hash_pairs)
