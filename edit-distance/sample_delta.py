@@ -6,7 +6,6 @@ from multiprocessing import Pool
 import logging
 import os
 import time
-from tqdm import tqdm
 import numpy as np
 import networkx as nx
 
@@ -17,9 +16,11 @@ def single_process_job(node_tuples, log_dir):
     log_path = f"{log_dir}/{os.getpid()}.log"
     logging.basicConfig(filename=log_path, level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(processName)s %(message)s")
+    logging.info(f"Process started")
+
     hyps = []
     for i, node_tuple in enumerate(node_tuples):
-        if i / 100:
+        if i % 50 == 0:
             logging.info(f"{i}th iteration")
 
         s = []
@@ -60,6 +61,8 @@ def hyperbolicity_sample(G, log_dir, seed=0, num_samples=50000, num_processes=1)
 
     nodes_partitioned = partition(node_tuples, num_processes)
     p_args_list = [(p_nodes, log_dir) for p_nodes in nodes_partitioned]
+    for p_arg in p_args_list:
+        print(p_arg)
 
     hyps = []
     with Pool(num_processes) as p:
@@ -90,9 +93,13 @@ if __name__ == '__main__':
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
 
+    read_start = time.time()
     with open(args.data_path) as csvfile:
         reader = csv.reader(csvfile)
         G = nx.from_edgelist(reader)
+
+    print(
+        f"Finished reading data from {args.data_path}. {time.time() - read_start} took secs")
 
     start_time = time.time()
     delta = hyperbolicity_sample(G, log_dir, args.seed,
