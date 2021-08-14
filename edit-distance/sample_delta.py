@@ -12,11 +12,19 @@ import networkx as nx
 from utils import partition
 
 
-def single_process_job(node_tuples, log_dir):
+def single_process_job(seed, log_dir, num_samples):
+    np.random.seed(seed)
+
     log_path = f"{log_dir}/{os.getpid()}.log"
     logging.basicConfig(filename=log_path, level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(processName)s %(message)s")
     logging.info(f"Process started")
+
+    node_tuples = []
+
+    for _ in range(num_samples):
+        node_tuple = np.random.choice(G.nodes(), 4, replace=False)
+        node_tuples.append(node_tuple)
 
     hyps = []
     for i, node_tuple in enumerate(node_tuples):
@@ -52,17 +60,15 @@ def single_process_job(node_tuples, log_dir):
 
 
 def hyperbolicity_sample(G, log_dir, seed=0, num_samples=50000, num_processes=1):
-    np.random.seed(seed)
-    node_tuples = []
+    num_per_process = num_samples // num_processes
+    num_per_process_r = num_samples % num_processes
+    num_sample_list = [num_per_process for i in range(num_processes)]
+    num_sample_list[-1] += num_per_process_r
 
-    for _ in range(num_samples):
-        node_tuple = np.random.choice(G.nodes(), 4, replace=False)
-        node_tuples.append(node_tuple)
+    p_args_list = [(seed + i, log_dir, n_p)
+                   for i, n_p in enumerate(num_sample_list)]
 
-    nodes_partitioned = partition(node_tuples, num_processes)
-    p_args_list = [(p_nodes, log_dir) for p_nodes in nodes_partitioned]
-    for p_arg in p_args_list:
-        print(p_arg)
+    print(p_args_list)
 
     hyps = []
     with Pool(num_processes) as p:
@@ -99,7 +105,7 @@ if __name__ == '__main__':
         G = nx.from_edgelist(reader)
 
     print(
-        f"Finished reading data from {args.data_path}. {time.time() - read_start} took secs")
+        f"Finished reading data from {args.data_path}. {time.time() - read_start:.3f} took secs")
 
     start_time = time.time()
     delta = hyperbolicity_sample(G, log_dir, args.seed,
