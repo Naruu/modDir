@@ -40,6 +40,20 @@ def edit_one_edge(original_matrix, original_ops):
     return edited
 
 
+def delete_one_edge(original_matrix, original_ops):
+    edited = []
+    ops = original_ops
+
+    len_matrix = len(original_matrix[0])
+    for i in range(len_matrix - 1):
+        for j in range(i + 1, len_matrix):
+            if original_matrix[i][j]:
+                matrix = deepcopy(original_matrix)
+                matrix[i][j] = 1 - matrix[i][j]
+                edited.append((matrix, ops))
+    return edited
+
+
 def edit_one_node(original_matrix, original_ops):
     edited = []
     matrix = original_matrix
