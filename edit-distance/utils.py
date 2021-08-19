@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import networkx as nx
+import numpy as np
 
 OP_CHOICES = ["conv1x1-bn-relu", "conv3x3-bn-relu", "maxpool3x3"]
 
@@ -51,6 +52,37 @@ def delete_one_edge(original_matrix, original_ops):
                 matrix = deepcopy(original_matrix)
                 matrix[i][j] = 1 - matrix[i][j]
                 edited.append((matrix, ops))
+    return edited
+
+
+def delete_two_edges(original_matrix, original_ops):
+    edited = []
+    ops = original_ops
+
+    row, col = np.where(original_matrix > 0)
+    indices = list(zip(row, col))
+    for i in range(len(indices)):
+        for j in range(i + 1, len(indices)):
+            matrix = deepcopy(original_matrix)
+            matrix[indices[i]] = 0
+            matrix[indices[j]] = 0
+            edited.append((matrix, ops))
+    return edited
+
+
+def delete_one_node_one_edge(original_matrix, ops):
+    edited = []
+
+    len_matrix = len(original_matrix[0])
+    v_sum = np.sum(original_matrix, axis=0)
+    h_sum = np.sum(original_matrix, axis=1)
+    for i in range(1, len_matrix - 1):
+        if (v_sum[i] + h_sum[i]) == 1:
+            matrix = original_matrix
+            matrix = np.delete(matrix, i, 0)
+            matrix = np.delete(matrix, i, 1)
+            ops = np.delete(ops, i, 0)
+            edited.append((matrix, ops))
     return edited
 
 
