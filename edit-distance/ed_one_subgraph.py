@@ -73,7 +73,7 @@ def single_arch_job(matrix, ops, dataset, output_path):
 
     origin_hash = archs_to_hashes([(matrix, ops)], dataset)[0]
     edited_hashes = archs_to_hashes(edge_edited, dataset)
-    rows = [(origin_hash, edited_hash) for edited_hash in edited_hashes]
+    rows = [(edited_hash, origin_hash) for edited_hash in edited_hashes]
 
     with open(output_path, 'a') as f:
         writer = csv.writer(f)
