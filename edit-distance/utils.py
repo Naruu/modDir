@@ -38,8 +38,8 @@ def matrix_unique_set(dataset):
 
 
 def partition(lst, num_partition):
-    for i in range(0, len(lst), num_partition):
-        yield lst[i: i + num_partition]
+    for arr in np.array_split(np.array(lst), num_partition):
+        yield arr
 
 
 def edit_one_edge(original_matrix, original_ops):

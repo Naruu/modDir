@@ -114,7 +114,7 @@ if __name__ == '__main__':
         f"number of graphs: {n_graphs}, approximately per process: {n_graphs / args.num_processes}")
 
     p_args = [dataset, output_dir, args.query_path, args.binary_path]
-    p_args_list = [[p_graphs] + p_args for [p_graphs] in data_graph_partitions]
+    p_args_list = [[p_graphs] + p_args for p_graphs in data_graph_partitions]
 
     start = time.time()
     with Pool(args.num_processes) as p:
