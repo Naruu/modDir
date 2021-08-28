@@ -28,6 +28,20 @@ def get_edit_distance(matrix1, ops1, matrix2, ops2, upper_bound):
     return nx.graph_edit_distance(G1, G2, node_match=node_match, edge_match=edge_match, upper_bound=upper_bound) or -1
 
 
+def matrix_unique_set(dataset):
+    matrix_set = set()
+    for _, v in enumerate(dataset.fixed_statistics.values()):
+        matrix = v['module_adjacency']
+        matrix_tupled = tuple([tuple(row) for row in matrix])
+        matrix_set.add(matrix_tupled)
+    return matrix_set
+
+
+def partition(lst, num_partition):
+    for i in range(0, len(lst), num_partition):
+        yield lst[i: i + num_partition]
+
+
 def edit_one_edge(original_matrix, original_ops):
     edited = []
     ops = original_ops
