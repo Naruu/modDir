@@ -12,7 +12,7 @@ import numpy as np
 
 from nasbench import api as api101
 
-from utils import delete_one_edge
+from utils import delete_one_edge, partition
 
 INPUT = 'input'
 OUTPUT = 'output'
@@ -24,11 +24,6 @@ DEFAULT_DATA_PATH = "../data/500.tfrecord"
 OUTPUT_DIR = "outputs"
 
 random.seed(0)
-
-
-def partition(lst, num_partition):
-    for i in range(0, len(lst), num_partition):
-        yield lst[i: i + num_partition]
 
 
 def matrix_unique_set(dataset):

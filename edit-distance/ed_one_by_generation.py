@@ -12,7 +12,7 @@ import numpy as np
 
 from nasbench import api as api101
 
-from utils import edit_one_edge, edit_one_node
+from utils import edit_one_edge, edit_one_node, partition
 
 # DEFAULT_DATA_PATH = ".data/nasbench_only108.tfrecord"
 DEFAULT_DATA_PATH = "../data/500.tfrecord"
@@ -21,11 +21,6 @@ SEED_ARCH_COUNT = 20000
 OUTPUT_DIR = "outputs"
 
 random.seed(0)
-
-
-def partition(lst, num_partition):
-    for i in range(0, len(lst), num_partition):
-        yield lst[i: i + num_partition]
 
 
 def matrix_unique_set(dataset):
